@@ -1,0 +1,254 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Paleta: verde limão predominante, preto secundário, roxo nos detalhes.
+  Cores em canais RGB para o Tailwind aplicar opacidade (bg-canvas/80, border-fg/15).
+  canvas = fundo, fg = texto, accent = botões de contorno e rótulos, accent-2 = roxo.
+*/
+:root {
+  --canvas: 175 242 26; /* #AFF21A, verde limão */
+  --fg: 10 10 10; /* preto */
+  --accent: 10 10 10;
+  --accent-2: 166 104 255; /* #A668FF, roxo */
+  --surface: 10 10 10;
+  --glow-1: 166 104 255;
+  --glow-2: 166 104 255;
+}
+
+/* Áreas pretas (Cases, Cara, card do projeto): o preto vira fundo e o limão vira texto. */
+.theme-dark {
+  --canvas: 10 10 10;
+  --fg: 175 242 26;
+  --accent: 175 242 26;
+  color: rgb(var(--fg));
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  font-family: 'Kanit', sans-serif;
+}
+
+html {
+  background: rgb(var(--canvas));
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safari antes do 16 não tem overflow: clip; sem isso, as faixas largas dariam rolagem lateral */
+@supports not (overflow: clip) {
+  main {
+    overflow-x: hidden;
+  }
+}
+
+/* Altura do retrato do hero: svh não muda quando a barra do Safari/Chrome aparece ou some */
+.hero-portrait {
+  height: 70vh;
+  height: 70svh;
+}
+
+@media (min-width: 640px) {
+  .hero-portrait {
+    height: 78vh;
+    height: 78svh;
+  }
+}
+
+/* Briza: trecho preso na tela enquanto os cards andam para o lado */
+.briza-pin {
+  height: calc(100vh + var(--briza-distance, 0px));
+  height: calc(100svh + var(--briza-distance, 0px));
+}
+
+body {
+  color: rgb(var(--fg));
+}
+
+/* Grade fina de fundo: limão com linhas pretas, ou preto com linhas limão nas áreas escuras. */
+body,
+.bg-grid {
+  background-color: rgb(var(--canvas));
+  background-image:
+    linear-gradient(rgb(var(--fg) / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--fg) / 0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/*
+  Camadas: o rastro roxo (z-1, fixo) passa por cima dos fundos das seções
+  e por baixo do conteúdo. :where() deixa as classes z-* do Tailwind valerem por cima.
+*/
+main > section > :where(:not(.absolute, .fixed)) {
+  position: relative;
+  z-index: 2;
+}
+
+/* Títulos: cor sólida, sem contorno. */
+.hero-heading {
+  color: rgb(var(--fg));
+}
+
+/* Cursor passando no título: a letra sobe e fica roxa, as vizinhas sobem um pouco. */
+.hover-title .hover-letter {
+  transform-origin: 50% 100%;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.25s ease;
+}
+
+.hover-title .hover-letter:hover {
+  transform: translateY(-0.14em) scale(1.08) rotate(-3deg);
+  color: rgb(var(--accent-2));
+}
+
+.hover-title span:has(> .hover-letter:hover) + span > .hover-letter,
+.hover-title span:has(+ span > .hover-letter:hover) > .hover-letter {
+  transform: translateY(-0.06em);
+}
+
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .hover-title .hover-letter:hover,
+  .hover-title span:has(> .hover-letter:hover) + span > .hover-letter,
+  .hover-title span:has(+ span > .hover-letter:hover) > .hover-letter {
+    transform: none;
+  }
+}
+
+/* Painel do hero: preto, canto chanfrado, linhas de varredura. */
+.hud {
+  background-color: rgb(10 10 10 / 0.92);
+  background-image: repeating-linear-gradient(0deg, rgb(var(--fg) / 0.05) 0 1px, transparent 1px 4px);
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+  box-shadow: inset 0 2px 0 rgb(var(--accent-2));
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.hud-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: rgb(var(--fg));
+}
+
+/* Stack: faixas infinitas de logos */
+.stack-row {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.stack-track {
+  animation: stack-scroll 32s linear infinite;
+}
+
+.stack-track-reverse {
+  animation-direction: reverse;
+}
+
+.stack-row:hover .stack-track {
+  animation-play-state: paused;
+}
+
+@keyframes stack-scroll {
+  from { transform: translateX(0); }
+  /* metade da lista + metade do espaço entre os itens (gap-4 = 1rem) */
+  to { transform: translateX(calc(-50% - 0.5rem)); }
+}
+
+.stack-chip {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.stack-chip .stack-logo {
+  transition: color 0.25s ease, transform 0.3s ease;
+}
+
+.stack-chip:hover {
+  transform: translateY(-4px);
+  border-color: #a668ff;
+  box-shadow: 0 10px 24px rgb(166 104 255 / 0.35);
+}
+
+.stack-chip:hover .stack-logo {
+  color: var(--brand);
+  transform: scale(1.12) rotate(-6deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack-track {
+    animation: none;
+    flex-wrap: wrap;
+    width: auto;
+    justify-content: center;
+  }
+
+  .stack-copy {
+    display: none;
+  }
+}
+
+.intro-caret {
+  animation: intro-caret 0.8s steps(1) infinite;
+}
+
+@keyframes intro-caret {
+  50% { opacity: 0; }
+}
+
+.status-ping {
+  animation: status-ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes status-ping {
+  75%, 100% { transform: scale(2.4); opacity: 0; }
+}
+
+/* Botão de metal líquido (src/components/ui/metallic-button.tsx) */
+.metallic-button-canvas {
+  /* aro metálico em CSS: aparece antes do shader ligar ou quando não há WebGL2 */
+  background: linear-gradient(115deg, #3a3a3a 0%, #f5f5f7 22%, #5a5a5a 40%, #e6e6ea 58%, #2e2e2e 76%, #cfcfd4 100%);
+}
+
+.metallic-button-canvas canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+}
+
+.metallic-button-ripple {
+  transform: translate(-50%, -50%) scale(0);
+  animation: metallic-button-ripple 0.6s ease-out forwards;
+}
+
+@keyframes metallic-button-ripple {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-ping {
+    animation: none;
+  }
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid rgb(var(--accent-2));
+  outline-offset: 3px;
+}
